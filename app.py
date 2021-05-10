@@ -36,11 +36,11 @@ ENV = 'dev'
 
 if ENV == 'dev':
     app.debug = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgreSQL://postgres:postgres@localhost/postgresdb'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:xu40e5@localhost/LABA3'#'postgres://postgres:postgres@localhost:5432/postgresdb'
 else:
     app.debug = False
-    app.config['SECRET_KEY'] = 'laba2artemenko'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://owcpwqpvgzcmxu:04749c59af1eaa222912276d7241efabbf893db35a91eccd3b0b7fe8bd54045c@ec2-107-21-214-222.compute-1.amazonaws.com:5432/d3u9j9tfd6imib'
+    app.config['SECRET_KEY'] = 'laba3marina'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ifmasvthbtqrpx:b2f7d41e8c283254009c9df6dbb7c2399c05d418f5793bc395ff8f28ef8aebb3@ec2-3-232-163-23.compute-1.amazonaws.com:5432/dgrf9g4r2fm3r'#'postgres://owcpwqpvgzcmxu:04749c59af1eaa222912276d7241efabbf893db35a91eccd3b0b7fe8bd54045c@ec2-107-21-214-222.compute-1.amazonaws.com:5432/d3u9j9tfd6imib'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
