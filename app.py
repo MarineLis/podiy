@@ -40,7 +40,7 @@ if ENV == 'dev':
 else:
     app.debug = False
     app.config['SECRET_KEY'] = 'laba3marina'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://itsoguxeignuah:8705af5d3b7febe104a2ed73e835ea536b785cbbe5e31532bad542d380431107@ec2-54-87-112-29.compute-1.amazonaws.com:5432/d8i0hgkbsvvlb1'#'postgres://owcpwqpvgzcmxu:04749c59af1eaa222912276d7241efabbf893db35a91eccd3b0b7fe8bd54045c@ec2-107-21-214-222.compute-1.amazonaws.com:5432/d3u9j9tfd6imib'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://jjxqiksaqyhdfp:666ec4ce16a43859da9ab3f617dc93475d2d0c5870f388daafbb5b6e112d64fd@ec2-54-163-254-204.compute-1.amazonaws.com:5432/deiq7ddtrg3ff5'#'postgres://owcpwqpvgzcmxu:04749c59af1eaa222912276d7241efabbf893db35a91eccd3b0b7fe8bd54045c@ec2-107-21-214-222.compute-1.amazonaws.com:5432/d3u9j9tfd6imib'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
