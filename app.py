@@ -200,9 +200,9 @@ eee = People(people_email='eee@gmail.com',
              )
 
 admin = People(people_email='admin@gmail.com',
-               people_name='Yaroslav',
-               people_phone='+380977730222',
-               people_birthday='1999-11-08',
+               people_name='Marinka',
+               people_phone='+380660336265',
+               people_birthday='2000-17-10',
                people_password='admin')
 
 # insert into Event (event_name, people_email, event_date) values ('mg', 'ddd@gmail.com', '1051-1-4');
