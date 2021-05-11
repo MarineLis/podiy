@@ -15,22 +15,22 @@
         </div>
         <div class="card-body">
  
-            <form class="form"  action = "/create_event" method="POST">
+            <form class="form"  action = "/create_fest" method="POST">
                 {{ form.hidden_tag() }}
  
 
-                {% if event_name %}
+                {% if fest_name %}
                     <div class="alert alert-danger" role="alert">
-                             <div>{{ event_name }}</div>
+                             <div>{{ fest_name }}</div>
                     </div>
                 {% endif %}
             <div class="form-group">
-                {{ form.event_name.label }}
-                {{ form.event_name(class_="form-control") }}
+                {{ form.fest_name.label }}
+                {{ form.fest_name(class_="form-control") }}
  
-                {% if form.event_name.errors%}
+                {% if form.fest_name.errors%}
                     <div class="alert alert-danger" role="alert">
-                        {% for message in form.event_name.errors %}
+                        {% for message in form.fest_name.errors %}
                              <div>{{ message }}</div>
                         {% endfor %}
                     </div>
@@ -39,12 +39,12 @@
  
  
             <div class="form-group">
-                {{ form.event_date.label }}
-                {{ form.event_date(class_="form-control") }}
+                {{ form.fest_date.label }}
+                {{ form.fest_date(class_="form-control") }}
 
-                {% if form.event_date.errors%}
+                {% if form.fest_date.errors%}
                     <div class="alert alert-danger" role="alert">
-                        {% for message in form.event_date.errors %}
+                        {% for message in form.fest_date.errors %}
                              <div>{{ message }}</div>
                         {% endfor %}
                     </div>

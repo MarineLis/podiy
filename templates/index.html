@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Cource Work</title>
+    <title>Fest</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -18,14 +18,14 @@
         {% if session['role'] == 'admin' %}
 
             <li class="nav-item"><a class="nav-link" href="/people">People</a></li>
-            <li class="nav-item"><a class="nav-link" href="/event">Event</a></li>
+            <li class="nav-item"><a class="nav-link" href="/fest">Fest </a></li>
             <li class="nav-item"><a class="nav-link" href="/contest">Contest</a></li>
             <li class="nav-item"><a class="nav-link" href="/place">Place</a></li>
-<!--            <li class="nav-item"><a class="nav-link" href="/shop">Country</a></li>-->
+<!--            <li class="nav-item"><a class="nav-link" href="/city">City</a></li>
             <li class="nav-item"><a class="nav-link" href="/clasteresation">Cluster</a></li>
             <li class="nav-item"><a class="nav-link" href="/regretion">Correlation</a></li>
             <li class="nav-item"><a class="nav-link" href="/clasification">Clasification</a></li>
-            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>-->
 
         {% endif %}
         {% if session['role'] != 'unlogged' %}
@@ -45,7 +45,7 @@
 
 <div class="container">
 
-    {% block content %}<h1>Welcome</h1>{% endblock %}
+    {% block content %}<h1>We like to see you there!</h1>{% endblock %}
 
 </div>
 

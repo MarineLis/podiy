@@ -20,48 +20,48 @@
  
                                
             <div class="form-group">
-                {{ form.country_name.label }}
-                {{ form.country_name(class_="form-control") }}
+                {{ form.city_name.label }}
+                {{ form.city_name(class_="form-control") }}
  
-                {% if form.country_name.errors%}
+                {% if form.city_name.errors%}
                     <div class="alert alert-danger" role="alert">
-                        {% for message in form.country_name.errors %}
+                        {% for message in form.city_name.errors %}
                              <div>{{ message }}</div>
                         {% endfor %}
                     </div>
                 {%endif%}
             </div>
                 <div class="form-group">
-                {{ form.country_population.label }}
-                {{ form.country_population(class_="form-control") }}
+                {{ form.city_population.label }}
+                {{ form.city_population(class_="form-control") }}
 
-                {% if form.country_population.errors%}
+                {% if form.city_population.errors%}
                     <div class="alert alert-danger" role="alert">
-                        {% for message in form.country_population.errors %}
+                        {% for message in form.city_population.errors %}
                              <div>{{ message }}</div>
                         {% endfor %}
                     </div>
                 {%endif%}
             </div>
                 <div class="form-group">
-                {{ form.country_balance.label }}
-                {{ form.country_balance(class_="form-control") }}
+                {{ form.city_balance.label }}
+                {{ form.city_balance(class_="form-control") }}
 
-                {% if form.country_balance.errors%}
+                {% if form.city_balance.errors%}
                     <div class="alert alert-danger" role="alert">
-                        {% for message in form.country_balance.errors %}
+                        {% for message in form.city_balance.errors %}
                              <div>{{ message }}</div>
                         {% endfor %}
                     </div>
                 {%endif%}
             </div>
                 <div class="form-group">
-                {{ form.country_government.label }}
-                {{ form.country_government(class_="form-control") }}
+                {{ form.city_government.label }}
+                {{ form.city_government(class_="form-control") }}
 
-                {% if form.country_government.errors%}
+                {% if form.city_government.errors%}
                     <div class="alert alert-danger" role="alert">
-                        {% for message in form.country_government.errors %}
+                        {% for message in form.city_government.errors %}
                              <div>{{ message }}</div>
                         {% endfor %}
                     </div>

@@ -1,38 +1,28 @@
 from flask import Flask, render_template, request, redirect, session
 from flask_sqlalchemy import SQLAlchemy
-
 from Forms.UserForm import UserForm
 from Forms.ContestForm import ContestForm
-from Forms.EventForm import EventForm
+from Forms.FestForm import FestForm
 from Forms.PlaceForm import PlaceForm
 from Forms.PeopleFormEdit import PeopleFormEdit
-from Forms.EventFormEdit import EventFormEdit
+from Forms.FestFormEdit import FestFormEdit
 from Forms.ContestFormEdit import ContestFormEdit
 from Forms.PlaceFormEdit import PlaceFormEdit
-from Forms.CountryForm import CountryForm
+from Forms.CityForm import CityForm
 from Forms.SearchForm import SearchForm
 from Forms.LoginForm import LoginForm
 from Forms.RegistrationFrom import RegistrationForm
 
-
-
 import numpy as np
 import pandas as pd
 from sqlalchemy.sql import func
-import plotly
-import plotly.graph_objs as go
-from sklearn.cluster import KMeans
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import StandardScaler
 import json
-# from neupy import algorithms
-from Forms.UserForm import UserForm
 import psycopg2
 
 app = Flask(__name__)
 app.secret_key = 'key'
 
-ENV = ''
+ENV = 'dev'
 
 if ENV == 'dev':
     app.debug = True
@@ -43,14 +33,12 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://jjxqiksaqyhdfp:666ec4ce16a43859da9ab3f617dc93475d2d0c5870f388daafbb5b6e112d64fd@ec2-54-163-254-204.compute-1.amazonaws.com:5432/deiq7ddtrg3ff5'#'postgres://owcpwqpvgzcmxu:04749c59af1eaa222912276d7241efabbf893db35a91eccd3b0b7fe8bd54045c@ec2-107-21-214-222.compute-1.amazonaws.com:5432/d3u9j9tfd6imib'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
-
 
 class Contest(db.Model):
     tablename = 'contest'
     contest_name = db.Column(db.String(20), primary_key=True)
-    event_name = db.Column(db.String(20), db.ForeignKey('event.event_name'))
+    fest_name = db.Column(db.String(20), db.ForeignKey('fest.fest_name'))
 
 
 class People(db.Model):
@@ -61,29 +49,29 @@ class People(db.Model):
     people_birthday = db.Column(db.Date)
     people_password = db.Column(db.String(20))
 
-    people_event = db.relationship('Event')
+    people_fest = db.relationship('Fest')
 
 
 class association(db.Model):
     __tablename__ = 'associate_table'
-    left_name = db.Column(db.String(20), db.ForeignKey('event.event_name'), primary_key=True)
+    left_name = db.Column(db.String(20), db.ForeignKey('fest.fest_name'), primary_key=True)
     right_name = db.Column(db.String(20), db.ForeignKey('place.place_name'), primary_key=True)
 
 
-class Event(db.Model):
-    __tablename__ = 'event'
-    event_name = db.Column(db.String(20), primary_key=True)
+class Fest(db.Model):
+    __tablename__ = 'fest'
+    fest_name = db.Column(db.String(20), primary_key=True)
     people_email = db.Column(db.String(20), db.ForeignKey('people.people_email'))
-    event_date = db.Column(db.Date)
+    fest_date = db.Column(db.Date)
 
     place_name_fk = db.relationship("Place", secondary='associate_table')
-    event_contest = db.relationship('Contest')
+    fest_contest = db.relationship('Contest')
 
 
-class CountyHasPlace(db.Model):
-    __tablename__ = 'county_has_place'
+class CityHasPlace(db.Model):
+    __tablename__ = 'city_has_place'
     place_name = db.Column(db.String(20), db.ForeignKey('place.place_name'), primary_key=True)
-    country_name = db.Column(db.String(20), db.ForeignKey('country.country_name'), primary_key=True)
+    city_name = db.Column(db.String(20), db.ForeignKey('city.city_name'), primary_key=True)
 
 
 class Place(db.Model):
@@ -92,78 +80,65 @@ class Place(db.Model):
     place_adress = db.Column(db.String(100))
     place_price = db.Column(db.Integer)
 
-    event_name_fk = db.relationship("Event", secondary='associate_table')
+    fest_name_fk = db.relationship("Fest", secondary='associate_table')
 
-    country_name_fk = db.relationship("Country", secondary='county_has_place')
+    city_name_fk = db.relationship("City", secondary='city_has_place')
 
 
-class Country(db.Model):
-    __tablename__ = 'country'
-    country_name = db.Column(db.String(20), primary_key=True)
-    country_population = db.Column(db.Integer)
-    country_balance = db.Column(db.Integer)
-    country_government = db.Column(db.String(30))
+class City(db.Model):
+    __tablename__ = 'city'
+    city_name = db.Column(db.String(20), primary_key=True)
+    city_population = db.Column(db.Integer)
+    city_balance = db.Column(db.Integer)
 
-    place_name_fk = db.relationship('Place', secondary='county_has_place')
+    place_name_fk = db.relationship('Place', secondary='city_has_place')
 
 
 # создание всех таблиц
 db.create_all()
 
 #очистка всех таблиц
-db.session.query(CountyHasPlace).delete()
-db.session.query(Country).delete()
+db.session.query(CityHasPlace).delete()
+db.session.query(City).delete()
 db.session.query(association).delete()
 db.session.query(Contest).delete()
-db.session.query(Event).delete()
+db.session.query(Fest).delete()
 db.session.query(People).delete()
 db.session.query(Place).delete()
 
 
 #создане объектов
-
-
-ukraine = Country(country_name='Ukraine',
-                  country_balance=1000,
-                  country_government='Verhovna Rada',
-                  country_population=60000
+Kyiv = City(city_name='Kyiv',
+                  city_balance=1000,
+                  city_population=3000000
                   )
 
-germany = Country(country_name='Germany',
-                  country_balance=200,
-                  country_government='Bundesregierung',
-                  country_population=80000
+Odessa = City(city_name='Odessa',
+                  city_balance=200,
+                  city_population=80000
                   )
 
-poland = Country(country_name='Poland',
-                 country_balance=30000,
-                 country_government='Polska',
-                 country_population=50000000
+Zhitomyr = City(city_name='Zhitomyr',
+                 city_balance=30000,
+                 city_population=50000000
                  )
 
-england = Country(country_name='England',
-                  country_balance=40000,
-                  country_government='Government',
-                  country_population=70000000
+Carpathians = City(city_name='Carpathians',
+                  city_balance=40000,
+                  city_population=70000000
                   )
 
-portugal = Country(country_name='Portugal',
-                   country_balance=50000,
-                   country_government='Portu',
-                   country_population=30000000
+Kharkov = City(city_name='Kharkov',
+                   city_balance=50000,
+                   city_population=30000000
                    )
 
 # insert into People (people_email, people_name, people_phone, people_birthday) values ('aaa@gmail.com', 'aaa', '+47447474774', '1835-1-23');
-#
 # insert into People (people_email, people_name, people_phone, people_birthday) values ('bbb@gmail.com', 'bbb', '+399489384334', '487-2-21');
-#
 # insert into People (people_email, people_name, people_phone, people_birthday) values ('ccc@gmail.com', 'ccc', '+23232332323', '1637-6-23');
-#
 # insert into People (people_email, people_name, people_phone, people_birthday) values ('ddd@gmail.com', 'ddd', '+39842349238492', '1-1-1');
-#
 # insert into People (people_email, people_name, people_phone, people_birthday) values ('eee@gmail.com', 'eee', '+304930432432', '1049-1-1');
-#
-#
+
 aaa = People(people_email='aaa@gmail.com',
              people_name='aaa',
              people_phone='+47447474774',
@@ -202,51 +177,43 @@ eee = People(people_email='eee@gmail.com',
 admin = People(people_email='admin@gmail.com',
                people_name='Marinka',
                people_phone='+380660336265',
-               people_birthday='2000-17-10',
+               people_birthday='2000-10-17',
                people_password='admin')
 
-# insert into Event (event_name, people_email, event_date) values ('mg', 'ddd@gmail.com', '1051-1-4');
-#
-# insert into Event (event_name, people_email, event_date) values ('christmas', 'bbb@gmail.com', '1619-3-8');
-#
-# insert into Event (event_name, people_email, event_date) values ('new year', 'aaa@gmail.com', '1994-12-2');
-#
-# insert into Event (event_name, people_email, event_date) values ('oktoberfest', 'ddd@gmail.com', '538-10-29');
-#
-# insert into Event (event_name, people_email, event_date) values ('football', 'ddd@gmail.com', '1-1-1');
+# insert into Fest (fest_name, people_email, fest_date) values ('food_fest', 'ddd@gmail.com', '1051-1-4');
+# insert into Fest (fest_name, people_email, fest_date) values ('musical_fest', 'bbb@gmail.com', '1619-3-8');
+# insert into Fest (fest_name, people_email, fest_date) values ('math_fest', 'aaa@gmail.com', '1994-12-2');
+# insert into Fest (fest_name, people_email, fest_date) values ('animal_fest', 'ddd@gmail.com', '538-10-29');
+# insert into Fest (fest_name, people_email, fest_date) values ('football_fest', 'ddd@gmail.com', '1-1-1');
 
-mg = Event(event_name='mg',
+food_fest = Fest(fest_name='food_fest',
            people_email='ddd@gmail.com',
-           event_date='1051-1-4')
+           fest_date='1051-1-4')
 
-christmas = Event(event_name='christmas',
+musical_fest = Fest(fest_name='musical_fest',
                   people_email='bbb@gmail.com',
-                  event_date='1619-3-8'
+                  fest_date='1619-3-8'
                   )
 
-new_year = Event(event_name='new year',
+math_fest = Fest(fest_name='math_fest',
                  people_email='aaa@gmail.com',
-                 event_date='1994-12-2'
+                 fest_date='1994-12-2'
                  )
 
-oktoberfest = Event(event_name='oktoberfest',
+animal_fest = Fest(fest_name='animal_fest',
                     people_email='ddd@gmail.com',
-                    event_date='538-10-29'
+                    fest_date='538-10-29'
                     )
 
-football = Event(event_name='football',
+football_fest = Fest(fest_name='football_fest',
                  people_email='ddd@gmail.com',
-                 event_date='1-1-1'
+                 fest_date='1-1-1'
                  )
 
 # insert into Place (place_name, place_adress) values ('museum', 'Киевская, Киев, Ковальський провулок, 5, 5-26');
-#
 # insert into Place (place_name, place_adress) values ('club', 'Hindenburgstraße 7a, 57072 Siegen');
-#
 # insert into Place (place_name, place_adress) values ('restaurant', 'Hindenburgstraße 12, 57072 Siegen');
-#
 # insert into Place (place_name, place_adress) values ('stadion', 'Leimbachstadion, Leimbachstraße 263, 57074 Siegen');
-#
 # insert into Place (place_name, place_adress) values ('theatre', 'Morleystraße 1, 57072 Siegen');
 
 museum = Place(place_name='museum',
@@ -255,84 +222,80 @@ museum = Place(place_name='museum',
                )
 
 club = Place(place_name='club',
-             place_adress='Hindenburgstraße 7a, 57072 Siegen',
+             place_adress='Пушкинская 7a, 57072',
              place_price=300
              )
 
 restaurant = Place(place_name='restaurant',
-                   place_adress='Hindenburgstraße 12, 57072 Siegen',
+                   place_adress='Лермонтовская 12, 57072 Siegen',
                    place_price=600
                    )
 
 stadion = Place(place_name='stadion',
-                place_adress='Leimbachstadion, Leimbachstraße 263, 57074 Siegen',
+                place_adress='Ахматовская 263, 57074 Siegen',
                 place_price=500
                 )
 
 theatre = Place(place_name='theatre',
-                place_adress='Morleystraße 1, 57072 Siegen',
+                place_adress='Мюнхаузеновская 1, 57072 Siegen',
                 place_price=200
                 )
 
-# insert into Contest (contest_name, event_name) values ('bier', 'football');
-#
-# insert into Contest (contest_name, event_name) values ('present', 'new year');
-#
-# insert into Contest (contest_name, event_name) values ('speed', 'christmas');
-#
-# insert into Contest (contest_name, event_name) values ('bottle of wine', 'christmas');
-#
-# insert into Contest (contest_name, event_name) values ('bierpong', 'oktoberfest');
+# insert into Contest (contest_name, fest_name) values ('ball', 'football_fest');
+# insert into Contest (contest_name, fest_name) values ('present', 'math_fest');
+# insert into Contest (contest_name, fest_name) values ('music', 'musical_fest');
+# insert into Contest (contest_name, fest_name) values ('bottle of wine', 'musical_fest');
+# insert into Contest (contest_name, fest_name) values ('animal', 'animal_fest');
 
-bier = Contest(contest_name='bier',
-               event_name='football'
+ball = Contest(contest_name='ball',
+               fest_name='football_fest'
                )
 
 present = Contest(contest_name='present',
-                  event_name='new year'
+                  fest_name='math_fest'
                   )
 
-speed = Contest(contest_name='speed',
-                event_name='christmas'
+music = Contest(contest_name='music',
+                fest_name='musical_fest'
                 )
 
 bottle_of_wine = Contest(contest_name='bottle of wine',
-                         event_name='christmas'
+                         fest_name='musical_fest'
                          )
 
-bierpong = Contest(contest_name='bierpong',
-                   event_name='oktoberfest'
+animal = Contest(contest_name='animal',
+                   fest_name='animal_fest'
                    )
 
-ddd.people_event.append(mg)
-bbb.people_event.append(christmas)
-aaa.people_event.append(new_year)
-ddd.people_event.append(oktoberfest)
-ddd.people_event.append(football)
+ddd.people_fest.append(food_fest)
+bbb.people_fest.append(musical_fest)
+aaa.people_fest.append(math_fest)
+ddd.people_fest.append(animal_fest)
+ddd.people_fest.append(football_fest)
 
-football.event_contest.append(bier)
-new_year.event_contest.append(present)
-christmas.event_contest.append(speed)
-christmas.event_contest.append(bottle_of_wine)
-oktoberfest.event_contest.append(bierpong)
+football_fest.fest_contest.append(ball)
+math_fest.fest_contest.append(present)
+musical_fest.fest_contest.append(music)
+musical_fest.fest_contest.append(bottle_of_wine)
+animal_fest.fest_contest.append(animal)
 
-mg.place_name_fk.append(museum)
-christmas.place_name_fk.append(club)
-new_year.place_name_fk.append(restaurant)
-oktoberfest.place_name_fk.append(stadion)
-football.place_name_fk.append(theatre)
+food_fest.place_name_fk.append(museum)
+musical_fest.place_name_fk.append(club)
+math_fest.place_name_fk.append(restaurant)
+animal_fest.place_name_fk.append(stadion)
+football_fest.place_name_fk.append(theatre)
 
-museum.country_name_fk.append(ukraine)
-club.country_name_fk.append(poland)
-restaurant.country_name_fk.append(portugal)
-stadion.country_name_fk.append(england)
-theatre.country_name_fk.append(germany)
+museum.city_name_fk.append(Kyiv)
+club.city_name_fk.append(Zhitomyr)
+restaurant.city_name_fk.append(Kharkov)
+stadion.city_name_fk.append(Carpathians)
+theatre.city_name_fk.append(Odessa)
 
 db.session.add_all([aaa, bbb, ccc, ddd, eee,admin,
-                    mg, christmas, new_year, oktoberfest, football,
-                    ukraine, germany, poland, england, portugal,
+                    food_fest, musical_fest, math_fest, animal_fest, football_fest,
+                    Kyiv, Odessa,Zhitomyr, Carpathians, Kharkov,
                     museum, club, restaurant, stadion, theatre,
-                    bier, present, speed, bottle_of_wine, bierpong
+                    ball, present, music, bottle_of_wine, animal
 
                     ])
 
@@ -433,132 +396,6 @@ def poeple_info(email):
         return redirect('/login')
 
 
-@app.route('/shop', methods=['GET', 'POST'])
-def get_county():
-    result = db.session.query(Country).all()
-
-    return render_template('all_country.html', result=result)
-
-
-@app.route('/get')
-def insert_countries_get():
-    Ukr = Country(
-        country_name='Ukr',
-        country_balance=228,
-        country_government='Gove1',
-        country_population=4000
-    )
-    Rus = Country(
-        country_name='Rus',
-        country_balance=1488122,
-        country_government='Gove1',
-        country_population=5431
-    )
-    USA = Country(
-        country_name='USA',
-        country_balance=23123,
-        country_government='Gove1',
-        country_population=5431
-    )
-    db.session.add_all([Ukr, Rus, USA])
-    db.session.commit()
-    return render_template('success.html')
-
-
-@app.route('/insert', methods=['GET', 'POST'])
-def insert_countries():
-    form = CountryForm()
-
-    if request.method == 'POST':
-        print('asd')
-
-        if form.validate() and form.check_balance_on_submit() and form.check_population_on_submit():
-
-            new_country = Country(
-                country_name=form.country_name.data,
-                country_population=form.country_population.data,
-                country_balance=form.country_balance.data,
-                country_government=form.country_government.data,
-            )
-            print('test')
-            db.session.add(new_country)
-            db.session.commit()
-            return redirect('/')
-        else:
-            if not form.check_balance_on_submit():
-                form.country_balance.errors = ['should be >0']
-            if not form.check_population_on_submit():
-                form.country_population.errors = ['0<country_population<100']
-
-            return render_template('country_insert_form.html', form=form)
-
-    else:
-        return render_template('country_insert_form.html', form=form)
-
-
-@app.route('/plot', methods=['GET', 'POST'])
-def plot():
-    query1 = (
-        db.session.query(
-            Country.country_name,
-            Country.country_balance.label('balance')
-        )
-    ).all()
-
-    country_name, country_balance = zip(*query1)
-    bar = go.Bar(
-        x=country_name,
-        y=country_balance
-    )
-
-    data = {
-        "bar": [bar]
-    }
-    graphs_json = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
-
-    return render_template('plot.html', graphsJSON=graphs_json)
-
-@app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
-    query1 = (
-        db.session.query(
-            People.people_name,
-            func.count(Event.event_name).label('event_name')
-        ).join(Event, People.people_email == Event.people_email).
-            group_by(People.people_name)
-    ).all()
-
-    print(query1)
-
-    query2 = (
-        db.session.query(
-            Event.event_name,
-            func.count(Contest.contest_name).label('contest_name')
-        ).join(Contest, Event.event_name == Contest.event_name).
-            group_by(Event.event_name)
-    ).all()
-
-    print(query2)
-
-    people_name, event_name = zip(*query1)
-    bar = go.Bar(
-        x=people_name,
-        y=event_name
-    )
-
-    event_name, contest_name = zip(*query2)
-    pie = go.Pie(
-        labels=event_name,
-        values=contest_name
-    )
-
-    data = {
-        "bar": [bar],
-        "pie": [pie]
-    }
-    graphs_json = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
-
-    return render_template('dashboard.html', graphsJSON=graphs_json)
 
 
 @app.route('/edit_people/<string:email>', methods=['GET', 'POST'])
@@ -589,30 +426,30 @@ def edit_people(email):
             return render_template('edit_people.html', form=form)
 
 
-@app.route('/edit_event/<string:name>', methods=['GET', 'POST'])
-def edit_event(name):
-    form = EventFormEdit()
-    result = db.session.query(Event).filter(Event.event_name == name).one()
+@app.route('/edit_fest/<string:name>', methods=['GET', 'POST'])
+def edit_fest(name):
+    form = FestFormEdit()
+    result = db.session.query(Fest).filter(Fest.fest_name == name).one()
 
     if request.method == 'GET':
 
-        form.event_name.data = result.event_name
-        form.event_date.data = result.event_date
+        form.fest_name.data = result.fest_name
+        form.fest_date.data = result.fest_date
 
-        return render_template('edit_event.html', form=form, form_name=name)
+        return render_template('edit_fest.html', form=form, form_name=name)
 
     elif request.method == 'POST':
         if form.validate() and form.validate_date():
 
-            result.event_name = form.event_name.data
-            result.event_date = form.event_date.data.strftime("%Y-%m-%d")
+            result.fest_name = form.fest_name.data
+            result.fest_date = form.fest_date.data.strftime("%Y-%m-%d")
 
             db.session.commit()
-            return redirect('/event')
+            return redirect('/fest')
         else:
             if not form.validate_date():
                 form.people_birthday.errors = ['should be >1900']
-            return render_template('edit_event.html', form=form)
+            return render_template('edit_fest.html', form=form)
 
 
 @app.route('/edit_contest/<string:name>', methods=['GET', 'POST'])
@@ -737,40 +574,40 @@ def delete_contest(name):
     return redirect('/contest')
 
 
-@app.route('/create_event', methods=['POST', 'GET'])
-def create_event():
-    form = EventForm()
+@app.route('/create_fest', methods=['POST', 'GET'])
+def create_fest():
+    form = FestForm()
     try:
-        result = db.session.query(Event).filter(Event.event_name == form.event_name.data).one()
+        result = db.session.query(Fest).filter(Fest.fest_name == form.fest_name.data).one()
         if result != 0:
-            return render_template('create_event.html', event_name="Event exist", form=form)
+            return render_template('create_fest.html', fest_name="Fest exist", form=form)
     except:
         pass
     if request.method == 'POST':
         if form.validate() and form.validate_date():
-            new_event = Event(
-                event_name=form.event_name.data,
-                event_date=form.event_date.data.strftime("%Y-%m-%d")
+            new_fest = Fest(
+                fest_name=form.fest_name.data,
+                fest_date=form.fest_date.data.strftime("%Y-%m-%d")
             )
-            db.session.add(new_event)
+            db.session.add(new_fest)
             db.session.commit()
-            return redirect('/event')
+            return redirect('/fest')
         else:
             if not form.validate_date():
-                form.event_date.errors = ['should be >2018']
-            return render_template('create_event.html', form=form)
+                form.fest_date.errors = ['should be >2018']
+            return render_template('create_fest.html', form=form)
     elif request.method == 'GET':
-        return render_template('create_event.html', form=form)
+        return render_template('create_fest.html', form=form)
 
 
-@app.route('/delete_event/<string:name>', methods=['GET', 'POST'])
-def delete_event(name):
-    result = db.session.query(Event).filter(Event.event_name == name).one()
+@app.route('/delete_fest/<string:name>', methods=['GET', 'POST'])
+def delete_fest(name):
+    result = db.session.query(Fest).filter(Fest.fest_name == name).one()
 
     db.session.delete(result)
     db.session.commit()
 
-    return redirect('/event')
+    return redirect('/fest')
 
 
 @app.route('/create_place', methods=['POST', 'GET'])
@@ -810,18 +647,6 @@ def delete_place(name):
     return redirect('/place')
 
 
-# @app.route('/', methods=['GET', 'POST'])
-# def root():
-#     return render_template('index.html')
-
-
-# @app.route('/people', methods=['GET'])
-# def all_peolpe():
-#     result = db.session.query(People).all()
-#
-#     return render_template('all_people.html', result=result)
-
-
 @app.route('/contest', methods=['GET'])
 def all_contest():
     result = db.session.query(Contest).all()
@@ -829,11 +654,11 @@ def all_contest():
     return render_template('all_contest.html', result=result)
 
 
-@app.route('/event', methods=['GET'])
-def all_event():
-    result = db.session.query(Event).all()
+@app.route('/fest', methods=['GET'])
+def all_fest():
+    result = db.session.query(Fest).all()
 
-    return render_template('all_event.html', result=result)
+    return render_template('all_fest.html', result=result)
 
 
 @app.route('/place', methods=['GET'])
@@ -843,134 +668,15 @@ def all_place():
     return render_template('all_place.html', result=result)
 
 
-@app.route('/clasteresation', methods=['GET', 'POST'])
-def claster():
-    df = pd.DataFrame()
-
-    for name, e_name in db.session.query(People.people_name, Event.event_name).join(Event,
-                                                                                      People.people_email == Event.people_email):
-        print(name, e_name)
-        df = df.append({"name": name, "e_name": e_name}, ignore_index=True)
-
-    X = pd.get_dummies(data=df)
-    print(X)
-    count_clasters = len(df['e_name'].unique())
-    print(count_clasters)
-    kmeans = KMeans(n_clusters=count_clasters, random_state=0).fit(X)
-    # print(kmeans)
-    count_columns = len(X.columns)
-    test_list = [0] * count_columns
-    test_list[0] = 1
-    test_list[-2] = 1
-    print(test_list)
-    # print(kmeans.labels_)
-    print(kmeans.predict(np.array([test_list])))
-
-    query1 = (
-        db.session.query(
-            func.count(),
-            Event.event_name
-        ).group_by(Event.event_name)
-    ).all()
-    skills, user_count = zip(*query1)
-    pie = go.Pie(
-        labels=user_count,
-        values=skills
-    )
-    data = {
-        "pie": [pie]
-    }
-    graphsJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
-    return render_template('clasteresation.html', row=kmeans.predict(np.array([test_list]))[0],
-                           count_claster=count_clasters, graphsJSON=graphsJSON)
-
-
-@app.route('/regretion', methods=['GET', 'POST'])
-def correlation():
-    df = pd.DataFrame()
-    for event_name, count_people in db.session.query(Event.event_name, func.count(Event.people_email)).group_by(Event.event_name):
-        print(event_name, count_people)
-        df = df.append({"event_name": event_name, "count_people": float(count_people)}, ignore_index=True)
-    db.session.close()
-    X = pd.get_dummies(data=df['event_name'])
-    print(X)
-    # print(train_X, df[["count_files"]])
-    reg = LinearRegression().fit(X, df[["count_people"]])
-
-    count_columns = len(X.columns)
-    test_list = [0] * count_columns
-    test_list[0] = 1
-    test_array = [np.array(test_list)]
-    test_str = ['christmas']
-    result = reg.predict(test_array)
-
-    # query1 = db.session.query(ormReposytoty.countofprojects, ormProject.countoffiles).join(
-    #         ormReposytoty, ormReposytoty.id == ormProject.reposytoty_id).all()
-    # count_pr, count_fl = zip(*query1)
-    # scatter = go.Scatter(
-    #     x=count_pr,
-    #     y=count_fl,
-    #     mode = 'markers',
-    #     marker_color='rgba(255, 0, 0, 100)',
-    #     name = "data"
-    # )
-    # x_line = np.linspace(0, 10)
-    # y_line = x_line * reg.coef_[0, 0] + reg.intercept_[0]
-    # line = go.Scatter(
-    #     x=x_line,
-    #     y=y_line,
-    #     mode = 'lines',
-    #     marker_color='rgba(0, 0, 255, 100)',
-    #     name = "regretion"
-    # )
-    # data = [scatter, line]
-    # graphsJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
-    return render_template('regretion.html', row=int(round(result[0, 0])), test_data=test_array[0], coef=reg.coef_[0],
-                           coef1=reg.intercept_, test_str=test_str[0])
-
-# @app.route('/clasification', methods=['GET', 'POST'])
-# def clasification():
-#     df = pd.DataFrame()
-#     for name, adress, price in db.session.query(Place.place_name, Place.place_adress, Place.place_price):
-#         print(name, adress, price)
-#         df = df.append({"name": name, "adress": adress, "price": price}, ignore_index=True)
-#     # db.session.close()
-#
-#     X = pd.get_dummies(data=df[['name', 'adress']])
-#     mean_price = df['price'].mean()
-#
-#     df.loc[df['price'] < mean_price, 'quality'] = 0
-#     df.loc[df['price'] >= mean_price, 'quality'] = 1
-#     print(df)
-#     print(X)
-#     pnn = algorithms.PNN(std=10, verbose=False)
-#
-#     pnn.train(X, df['quality'])
-#     test_str = ['museum', 'Ковальський провулок']
-#     count_columns = len(X.columns)
-#     test_list = np.array([0] * count_columns)
-#     test_list[0] = 1
-#     test_list[-2] = 1
-#     test_list = np.reshape(test_list, (1, len(test_list)))
-#     print(test_list)
-#     y_predicted = pnn.predict(test_list)
-#     result = "Ні"
-#     if y_predicted - 1 < 0.0000000000001:
-#         result = "Так"
-#
-#     return render_template('clasification.html', y_predicted=result, test_data=test_list[0], test_str=test_str)
-#
-
-
 @app.route('/search', methods=['POST', 'GET'])
 def search():
     form = SearchForm()
 
     if request.method == 'POST':
-        if form.type_field.data == 'event_name':
-            res = db.session.query(Event).filter(Event.event_name == form.search_value.data).all()
-        elif form.type_field.data == 'event_date':
-            res = db.session.query(Event).filter(Event.event_date == form.search_value.data).all()
+        if form.type_field.data == 'fest_name':
+            res = db.session.query(Fest).filter(Fest.fest_name == form.search_value.data).all()
+        elif form.type_field.data == 'fest_date':
+            res = db.session.query(Fest).filter(Fest.fest_date == form.search_value.data).all()
 
         return render_template('search_result.html', vacancies=res)
     else:

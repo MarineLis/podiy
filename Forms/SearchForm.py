@@ -5,8 +5,8 @@ from wtforms import validators
 
 class SearchForm(FlaskForm):
     type_field = SelectField('Choose field', choices=[
-        ('event_name', 'event_name'),
-        ('event_date', 'event_date'),
+        ('fest_name', 'fest_name'),
+        ('fest_date', 'fest_date'),
     ])
     search_value = StringField("Value: ", [validators.DataRequired('shouldnt be empty value')])
 
