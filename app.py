@@ -22,7 +22,7 @@ import psycopg2
 app = Flask(__name__)
 app.secret_key = 'key'
 
-ENV = 'dev'
+ENV = ''
 
 if ENV == 'dev':
     app.debug = True
@@ -30,7 +30,7 @@ if ENV == 'dev':
 else:
     app.debug = False
     app.config['SECRET_KEY'] = 'laba3marina'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://kclbilmhewkegy:9f66e6ac5454bd65ab5cfe29ec073fbd29867249f9a9e136818562a2d9f35774@ec2-52-87-107-83.compute-1.amazonaws.com:5432/d7191v3qmah9vk'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://bdigceqvcxtfal:35e9f00c28a5715e84985db5e807027f4363334c144b350d8b1320678a5c4385@ec2-3-233-43-103.compute-1.amazonaws.com:5432/dee3l4su5ase8p'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
