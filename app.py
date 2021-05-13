@@ -30,7 +30,7 @@ if ENV == 'dev':
 else:
     app.debug = False
     app.config['SECRET_KEY'] = 'laba3marina'
-    app.config['SQLALCHEMY_DATABASE_URI'] = ' postgres://toycznzvxgcoac:64ac64f09ba4ba616299c65bd819e14ee34f777b729b9a98edee72a9bfc9a92b@ec2-107-20-153-39.compute-1.amazonaws.com:5432/demij5ravrghbj'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://vhvdhatwvgwrqi:017ae15421526ef1936ecac9a042672ff9f4e3107cec577d871e8620bfeb94f1@ec2-54-163-254-204.compute-1.amazonaws.com:5432/d5bk6gtqhqg32k'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
